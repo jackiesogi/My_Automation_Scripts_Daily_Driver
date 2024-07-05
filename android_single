@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# Stop Waydroid container if running
+sudo waydroid container stop
+echo -e "\033[34mRUNNING:\033[0m sudo waydroid container stop\n"
+
+# Start Waydroid container (runs as a daemon)
+sudo waydroid container start &
+echo -e "\033[34mRUNNING:\033[0m sudo waydroid container start &\n"
+
+# Stop Waydroid session if running
+waydroid session stop
+echo -e "\033[34mRUNNING:\033[0m waydroid session stop\n"
+
+# Stop named service
+sudo systemctl stop named
+echo -e "\033[34mRUNNING:\033[0m sudo systemctl stop named\n"
+
+# Start Waydroid session in the background
+waydroid session start &
+echo -e "\033[34mRUNNING:\033[0m waydroid session start &\n" 
+
+# Wait for 5 seconds to ensure Waydroid session starts properly
+sleep 3 
+
+# Start named service again
+sudo systemctl start named &
+echo -e "\033[34mRUNNING:\033[0m sudo systemctl start named &\n" 
+
+echo -e "\033[32mWaydroid and named service restarted successfully.\n\033[0m"
+
+waydroid prop set persist.waydroid.cursor_on_subsurface false
+
+#waydroid show-full-ui

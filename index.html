@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Remote Shell</title>
+<style>
+    body {
+        background-color: black;
+        color: white;
+        font-family: monospace;
+    }
+    input[type="text"] {
+        background-color: transparent;
+        border: none;
+        color: white;
+        width: 100%;
+        outline: none;
+    }
+    #result {
+        display: none;
+    }
+</style>
+</head>
+<body>
+<form id="remoteForm" method="post" action="#" onsubmit="return executeCommand()">
+    <label for="command">Enter command:</label><br>
+    <input type="text" id="command" name="command" autocomplete="off" placeholder="Type your command here...">
+</form>
+
+<div id="result">
+    <h2>Result:</h2>
+    <pre id="resultText"></pre>
+</div>
+
+<script>
+function executeCommand() {
+    var commandInput = document.getElementById("command").value;
+    var resultDiv = document.getElementById("result");
+    var resultText = document.getElementById("resultText");
+    
+    // Execute the command using Fetch API
+    fetch('/execute.py', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'text/plain'
+        },
+        body: commandInput
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.text();
+    })
+    .then(data => {
+        // On success, display the result
+        resultText.textContent = data;
+        resultDiv.style.display = "block";
+    })
+    .catch(error => {
+        // On error, display error message
+        resultText.textContent = "Error executing command.";
+        resultDiv.style.display = "block";
+        console.error('There was a problem with the fetch operation:', error);
+    });
+    
+    // Clear input field
+    document.getElementById("command").value = "";
+    return false; // Prevent form submission
+}
+</script>
+</body>
+</html>
+

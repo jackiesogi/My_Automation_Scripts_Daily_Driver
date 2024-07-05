@@ -1,0 +1,53 @@
+### Name: myscript
+### Description: Load the custom shell script in specific directory.
+### Author: Jackie Chen
+#!/usr/bin/env bash
+
+# Load necessary utilities
+SCRIPT_DIR="$(dirname "$(realpath "$0")")"
+source "${SCRIPT_DIR}/utils/jcktermio.inc"  # Basic terminal I/O utilities
+
+# Default script directory
+DEFAULT_SCRIPT_DIR=/home/jck/Documents/shell-scripts/
+LOAD_SCRIPT_DIR="${DEFAULT_SCRIPT_DIR}"
+declare -i DIR_ADDED=0
+
+# Add specified directories to PATH or use default if none specified
+if [[ $# -eq 0 ]]; then
+    jck_logmsg_colored_formatted "YELLOW" "[INFO] "
+    jck_logmsg_colored_formatted "WHITE" "No directory specified, trying to load scripts from $LOAD_SCRIPT_DIR\n"
+    sleep 1
+    jck_logmsg_colored_formatted "YELLOW" "[INFO] "
+    jck_logmsg_colored_formatted "WHITE" "Adding $LOAD_SCRIPT_DIR to \$PATH...\n"
+    export PATH="$PATH:$LOAD_SCRIPT_DIR" 
+    DIR_ADDED=$((DIR_ADDED + 1))
+    sleep 1
+else
+    jck_logmsg_colored_formatted "YELLOW" "[INFO] "
+    jck_logmsg_colored_formatted "WHITE" "Multiple directories detected, trying to load scripts from them...\n"
+    sleep 1
+    for DIR in "$@"; do
+        if [[ -d $DIR ]]; then
+            jck_logmsg_colored_formatted "YELLOW" "[INFO] "
+            jck_logmsg_colored_formatted "WHITE" "Adding $DIR to \$PATH...\n"
+            export PATH="$PATH:$DIR"
+            DIR_ADDED=$((DIR_ADDED + 1))
+	    sleep 1
+        else
+            jck_logmsg_colored_formatted "RED" "[ERROR] "
+            jck_logmsg_colored_formatted "WHITE" "$DIR is not a valid path on this system, try another one!\n"
+	    sleep 1
+        fi
+    done
+    sleep 1
+fi
+
+# Print information about the task
+jck_logmsg_colored_formatted "YELLOW" "[INFO] "
+jck_logmsg_colored_formatted "WHITE" "Task finished, $DIR_ADDED directories were added.\n"
+
+echo "export PATH=\"$PATH\"" >> "/home/jck/Downloads/temp/.tmpbashrc/.bashrc-$(date '+%Y%m%d-%H%M%S').tmp"
+
+# Start an interactive Bash shell with the updated PATH
+source /home/jck/.bashrc
+bash

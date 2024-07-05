@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+VOICE="en_US/ljspeech_low"
+
+mimic3-server --preload-voice "$VOICE"
