@@ -44,7 +44,7 @@ for path in "${SEARCH_PATH[@]}"; do
     if [ -d "$path" ]; then
         # Use find to search for .h files recursively and grep for the macro
         if [[ $SEARCH_MACRO_ONLY == 0 ]]; then
-		find "$path" -type f -exec grep --color=auto -rnE "*$SEARCH_MACRO*" {} + 2> /dev/null | less -r
+		find "$path" -type f -exec grep --color=auto -rnE ".*$SEARCH_MACRO.*" {} + 2> /dev/null | less -r
 	else
 		find "$path" -type f -name "*.h" -exec grep --color=auto -rnE "^\s*#\s*define\s+.*$SEARCH_MACRO.*" {} + 2> /dev/null | less -r
 	fi
@@ -53,4 +53,4 @@ for path in "${SEARCH_PATH[@]}"; do
     fi
 done
 
-echo "Searching has done for ${SEARCH_PATH[@]}"
+echo "Searching for pattern \"$SEARCH_MACRO\" has done in ${SEARCH_PATH[@]}"
