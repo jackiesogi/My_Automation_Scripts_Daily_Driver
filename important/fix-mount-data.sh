@@ -37,6 +37,7 @@ sleep 3
 log_formatted_colored_msg "BLUE" "[RUN] sudo mount /media/jck/Data"
 sudo mount /media/jck/Data
 sleep 3
+nautilus --quit
 log_formatted_colored_msg "BLUE" "[RUN] nautilus --quit"
 sleep 1
 log_formatted_colored_msg "GREEN" "Done! Now restart nautilus to see if the problem has been resolved!"
