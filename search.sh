@@ -12,10 +12,23 @@ SEAECH_MACRO_ONLY=1
 function print_usage() {
 	echo "$PROGRAM $VERSION -- $DESCRIPTION" 
 	echo ""
-	echo 'Usage: search.sh [-d] ${DIRECTORY} [-m] {on,off} [-h]'
-	echo "    -d \${DIRECTORY}    for example, -d ~/.local/scripts"
-	echo "    -m {on,off}        for example, -m off for search keyword"
-	echo "    -h                 show help page"
+	echo "Usage: search.sh [-d] ${DIRECTORY} [-m] {on,off} [-h]"
+	echo ""
+	echo "    -d [DIRECTORY]     Specify the root directory you want to search, default to '/usr/include/'"
+	echo "    -a [DIRECTORY]     Append more directories into search paths."
+	echo "    -m [on|off]        Toggle search-c-macro-only option ON or OFF, default to 'on'"
+	echo "    -h                 Show help page"
+	echo ""
+	echo "Example:"
+	echo ""
+	echo "    Search for the occurence of keyword 'ValueError' in current directory"
+	echo "    search.sh -d . -m off 'ValueError'"
+	echo ""
+	echo "    Search for the C macro 'POSIX_VERSION' in default directory"
+	echo "    search.sh 'POSIX_VERSION' (same with search.sh -d default -m on POSIX_VERSION)"
+	echo ""
+	echo "    Search for the occurence of keyword 'print' in default and additional path '/usr/local/include/SDL2/'"
+	echo "    search.sh -a /usr/local/include/SDL2/ print (same with search.sh -a /usr/local/include/SDL2/ -m on print"
 }
 
 while [[ $# -gt 0 ]]; do
@@ -25,7 +38,9 @@ while [[ $# -gt 0 ]]; do
 			exit 0
 			;;
 		-d)
-			SEARCH_PATH=("$2")
+			if [[ $2 != 'default' ]]; then
+				SEARCH_PATH=("$2")
+			fi
 			shift 2
 			;;
         	-a)
