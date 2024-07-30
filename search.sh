@@ -8,16 +8,17 @@ AUTHOR="Jackie Chen"
 SEARCH_PATH=('/usr/include')
 SEARCH_MACRO=""
 SEAECH_MACRO_ONLY=1
+SEARCH_TYPE_NAME=""
 
 function print_usage() {
 	echo "$PROGRAM $VERSION -- $DESCRIPTION" 
 	echo ""
 	echo "Usage: search.sh [-d] ${DIRECTORY} [-m] {on,off} [-h]"
 	echo ""
-	echo "    -d [DIRECTORY]     Specify the root directory you want to search, default to '/usr/include/'"
-	echo "    -a [DIRECTORY]     Append more directories into search paths."
-	echo "    -m [on|off]        Toggle search-c-macro-only option ON or OFF, default to 'on'"
-	echo "    -h                 Show help page"
+	echo "    -d [DIRECTORY]          Specify the root directory you want to search, default to '/usr/include/.'"
+	echo "    -a [DIRECTORY]          Append more directories into search paths."
+	echo "    -m [on|off]             Toggle search-c-macro-only option ON or OFF, default to 'on'."
+	echo "    -n [macro|typedef|all]  Select the target you want to search."
 	echo ""
 	echo "Example:"
 	echo ""
@@ -29,6 +30,10 @@ function print_usage() {
 	echo ""
 	echo "    Search for the occurence of keyword 'print' in default and additional path '/usr/local/include/SDL2/'"
 	echo "    search.sh -a /usr/local/include/SDL2/ print (same with search.sh -a /usr/local/include/SDL2/ -m on print"
+}
+
+function option_conflict() {
+	echo "option $1 and option $2 cannot used at the same time..."
 }
 
 while [[ $# -gt 0 ]]; do
@@ -48,6 +53,10 @@ while [[ $# -gt 0 ]]; do
 			shift 2
 			;;
 		-m)
+			if [[ -n $SEARCH_TYPE_NAME ]]; then  # -n option already used
+				option_conflict '-m' '-n'
+				exit 1
+			fi
 			if [[ $2 == "off" ]]; then
 				SEARCH_MACRO_ONLY=0
 				shift 2
@@ -58,6 +67,10 @@ while [[ $# -gt 0 ]]; do
 				SEARCH_MACRO_ONLY=1
 				shift 2
 			fi
+			;;
+		-n)
+			SEARCH_TYPE_NAME=$2
+			shift 2
 			;;
         	*)
             		break
@@ -73,17 +86,35 @@ if [[ -z "$SEARCH_MACRO" ]]; then
 fi
 
 for path in "${SEARCH_PATH[@]}"; do
-    # Check if the path exists
-    if [ -d "$path" ]; then
-        # Use find to search for .h files recursively and grep for the macro
-        if [[ $SEARCH_MACRO_ONLY == 0 ]]; then
-		find "$path" -type f -exec grep --color=auto -rnE ".*$SEARCH_MACRO.*" {} + 2> /dev/null | less -r
+	# Check if the path exists
+	if [ -d "$path" ]; then
+		if [[ -z $SEARCH_TYPE_NAME ]]; then
+			# Use find to search for .h files recursively and grep for the macro
+			if [[ $SEARCH_MACRO_ONLY == 0 ]]; then
+				find "$path" -type f -exec grep --color=auto -rnE ".*$SEARCH_MACRO.*" {} + 2> /dev/null | less -r
+			else
+				find "$path" -type f -name "*.h" -exec grep --color=auto -rnE "^\s*#\s*define\s+.*$SEARCH_MACRO.*" {} + 2> /dev/null | less -r
+			fi
+		else
+			case $SEARCH_TYPE_NAME in
+				macro)
+					find "$path" -type f -name "*.h" -exec grep --color=auto -rnE "^\s*#\s*define\s+.*$SEARCH_MACRO.*" {} + 2> /dev/null | less -r
+					;;
+				typedef)
+					find "$path" -type f -name "*.h" -exec grep --color=auto -rnE "^\s*typedef\s+.*$SEARCH_MACRO.*" {} + 2> /dev/null | less -r
+					;;
+				all)
+					find "$path" -type f -exec grep --color=auto -rnE ".*$SEARCH_MACRO.*" {} + 2> /dev/null | less -r
+					;;
+				*)
+					print_usage
+					exit 1
+					;;
+			esac
+		fi
 	else
-		find "$path" -type f -name "*.h" -exec grep --color=auto -rnE "^\s*#\s*define\s+.*$SEARCH_MACRO.*" {} + 2> /dev/null | less -r
+		echo "Path $path does not exist."
 	fi
-    else
-        echo "Path $path does not exist."
-    fi
 done
 
 echo "Searching for pattern \"$SEARCH_MACRO\" has done in ${SEARCH_PATH[@]}"
