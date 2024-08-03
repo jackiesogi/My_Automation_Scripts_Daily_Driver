@@ -1,23 +1,48 @@
 #!/bin/bash
 
+# Configuartion
 LOG_FILE_DIR="findnonascii.log"
 TMP_FILE_DIR="findnonascii.tmp"
+GREP_EXPRESSION="[^[:ascii:]]"
+FIND_FILENAME="*.cs"
+
+# Internal Variable
 count=0
+PROGRAM_NAME="findnonascii.sh"
+
+conf="$(zenity --forms --title="New Search" \
+	--text="Enter information about this search." \
+	--separator=':' \
+	--add-entry="Target filename regex" \
+	--add-entry="Target grep expression")"
+
+IFS=: read -r -a conf_array <<< "$conf"
+conf_fnameregex="${conf_array[0]}"
+conf_grepexpr="${conf_array[1]}"
+
+#echo $conf
+#echo $conf_fnameregex
+#echo $conf_grepexpr
+#exit 0
 
 echo > $LOG_FILE_DIR
 
-for file in $(find . -type f -name "*.cs"); do
+for file in $(find . -type f -name "$conf_fnameregex"); do
 	
-	grep -rnaP '[^[:ascii:]]' $file > $TMP_FILE_DIR
-	result=$(cat $TMP_FILE_DIR)
+	if [[ $file == "./$PROGRAM_NAME"  ]]; then
+		continue
+	fi
+
+	grep -rnaP "$conf_grepexpr" $file > $TMP_FILE_DIR
 
 	while read -r line; do
 		count=$((count+1))
 		MK="[]"
 		NO=$count
 		FN=$file
-		LN="$(echo $line | cut -d: -f1)"
-		OC="$(echo $line | cut -d: -f2-)"
+		LN="$(echo "$line" | cut -d: -f1)"
+		OC="$(echo "$line" | cut -d: -f2-)"
+		#echo $OC
 
 		echo "$MK $NO $FN $LN '$OC' " >> $LOG_FILE_DIR
 	done < $TMP_FILE_DIR
@@ -28,16 +53,13 @@ data="$(cat $LOG_FILE_DIR)"
 
 cmd="zenity --list --checklist --editable --print-column='ALL' --width 1200 --height 750 \
   --title='View Non-ASCII Code : Modify File Content' --text='Make sure you are in a git repository or already did a backup, since this tool will overwrite the original content!' \
-  --column='MARK' --column='NO' --column='FILENAME' --column='LINENO' --column='CODE' $data"
+  --column='MARK' --column='NO' --column='FILENAME' --column='LINENO' --column='CODE'"
 
-
-mod_record=$(eval $cmd 2> /dev/null)
+# TODO: Prevent $data from escaping to the zenity command 
+mod_record=$(eval $cmd $data 2> /dev/null)
 
 IFS='|' read -r -a fields <<< "$mod_record"
 num_fields=${#fields[@]}
-
-#echo "fields: ${fields[@]}"
-#echo "number of fields: $num_fields"
 
 # Iterate through the fields
 for (( i = 0 ; i < num_fields ; i += 4 )); do
@@ -87,6 +109,8 @@ for (( i = 0 ; i < num_fields ; i += 4 )); do
 	#")
 
 done
+
+rm -f $LOG_FILE_DIR $TMP_FILE_DIR
 
 #for mod_no in "${mod_record_array[@]}"; do
 #	NO=$mod_no
