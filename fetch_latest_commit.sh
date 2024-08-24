@@ -72,10 +72,12 @@ for FILE in $FILES_CHANGED; do
             File diff: $FILE_DIFF
 
             Please provide a detailed explanation of these changes, including:
-            1. The purpose of the changes and how they fit into the overall project architecture.(Title: Why Change?)
-            2. An introduction to any foundational concepts related to this change, for instance, the function or macro's usage and purpose before and after changing.(Title: foundational concepts)
-            3. Any background information that might help a contributor who is not yet familiar with the project to understand the context.(Title: for newbies) 
-            4. Output it as plain text and do not use markdown syntax."
+            1. The purpose of the changes and how they fit into the overall project architecture.(Title:<h3>Why Change?</h3>)
+            2. An introduction to any foundational concepts related to this change, for instance, the function or macro's usage and purpose before and after changing.(Title:<h3>Foundational concepts</h3>)
+            3. Any background information that might help a contributor who is not yet familiar with the project to understand the context.(Title:<h3>For newbies</h3>)
+            4. What scenarios will the bug or problem occur if using the old code, provide examples if possible.(Title:<h3>Problematic Scenarios</h3>)
+            5. Use well-structured html as an output format, and only use h3 and h5 for title, and if possible, provide an url to the related sources or documentation.
+            6. DO NOT add title other than the 4 provided above."
 
     # Get the explanation for the file using the `chatgpt` command
     FILE_EXPLANATION=$(chatgpt -q "$REQUEST_CONTENT")
