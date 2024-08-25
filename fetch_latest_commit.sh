@@ -5,6 +5,22 @@ REPO_PATH="$HOME/Downloads/gitrepo/coreutils"  # Local path to the repository
 LAST_COMMIT_FILE="$REPO_PATH/.last_commit"  # File to store the last processed commit hash
 LOG_FILE="$REPO_PATH/commit_log.html"  # Log file to store commit explanations in HTML format
 
+case $1 in
+    -d|--directory)
+        if [ -d "$2" ]; then
+            REPO_PATH="$2"
+        else
+            echo "Error: Directory '$2' not found."
+            exit 1
+        fi
+        ;;
+    -h|--help)
+        echo "Usage: $0"
+        echo "Fetch the latest commit from a Git repository and explain the changes."
+        exit 0
+        ;;
+esac
+
 # Navigate to the repository
 cd "$REPO_PATH" || exit
 
@@ -77,7 +93,7 @@ for FILE in $FILES_CHANGED; do
             3. Any background information that might help a contributor who is not yet familiar with the project to understand the context.(Title:<h3>For newbies</h3>)
             4. What scenarios will the bug or problem occur if using the old code, provide examples if possible.(Title:<h3>Problematic Scenarios</h3>)
             5. Use well-structured html as an output format, and only use h3 and h5 for title, and if possible, provide an url to the related sources or documentation.
-            6. DO NOT add title other than the 4 provided above."
+            6. DO NOT add any title other than the 4 provided above."
 
     # Get the explanation for the file using the `chatgpt` command
     FILE_EXPLANATION=$(chatgpt -q "$REQUEST_CONTENT")
